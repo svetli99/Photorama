@@ -7,7 +7,7 @@
 
 import Foundation
 
-class Photo: Codable, Equatable {
+class FlickrPhoto: Codable, Equatable {
     let title: String
     let remoteURL: URL?
     let photoID: String
@@ -20,7 +20,7 @@ class Photo: Codable, Equatable {
         case dateTaken = "datetaken"
     }
     
-    static func == (lhs: Photo, rhs: Photo) -> Bool {
+    static func == (lhs: FlickrPhoto, rhs: FlickrPhoto) -> Bool {
         return lhs.photoID == rhs.photoID
     }
 }
