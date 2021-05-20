@@ -41,7 +41,6 @@ class PhotosViewController: UIViewController, UICollectionViewDelegate {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         collectionView.reloadSections(IndexSet(integer: 0))
-        //collectionView.reloadData()
     }
     
     func collectionView(_ collectionView: UICollectionView,
@@ -77,7 +76,18 @@ class PhotosViewController: UIViewController, UICollectionViewDelegate {
         switch segue.identifier {
         case "showPhoto":
             if let selectedIndexPath = collectionView.indexPathsForSelectedItems?.first {
-                let photo = photoDataSource.photos[selectedIndexPath.row]
+                let photos: [Photo]
+                switch segmentedControl.selectedSegmentIndex {
+                case 0:
+                    photos = photoDataSource.photos
+                case 1:
+                    photos = photoDataSource.newPhotos
+                case 2:
+                    photos = photoDataSource.favoritePhotos
+                default:
+                    photos = photoDataSource.photos
+                }
+                let photo = photos[selectedIndexPath.row]
                 
                 let destinationVC = segue.destination as! PhotoInfoViewController
                 destinationVC.photo = photo

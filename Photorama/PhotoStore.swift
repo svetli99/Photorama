@@ -16,6 +16,7 @@ enum PhotoError: Error {
 class PhotoStore {
     static let shared = PhotoStore()
     let imageStore = ImageStore.shared
+    var tagDataSource: TagDataSource!
     
     let persistentContainer: NSPersistentContainer = {
         let container = NSPersistentContainer(name: "Photorama")
@@ -86,7 +87,7 @@ class PhotoStore {
             switch FlickrAPI.photos(fromJSON: jsonData) {
             case let .success(flickrPhotos):
                 let setPhotos = Set(self.allPhotos)
-                
+                self.allPhotos.forEach { $0.isNew = false }
                 flickrPhotos.forEach { photo in
                     if !setPhotos.contains(where: { $0.photoID == photo.photoID }) {
                         var newPhoto: Photo!
@@ -96,6 +97,7 @@ class PhotoStore {
                             newPhoto.photoID = photo.photoID
                             newPhoto.remoteURL = photo.remoteURL
                             newPhoto.dateTaken = photo.dateTaken
+                            newPhoto.isNew = true
                         }
                         self.allPhotos.append(newPhoto)
                     }
