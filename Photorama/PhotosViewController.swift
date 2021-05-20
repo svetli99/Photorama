@@ -9,8 +9,12 @@ import UIKit
 
 class PhotosViewController: UIViewController, UICollectionViewDelegate {
     @IBOutlet var collectionView: UICollectionView!
-    var store: PhotoStore!
+    @IBOutlet var segmentedControl: UISegmentedControl!
+    
+    var store = PhotoStore.shared
     let photoDataSource = PhotoDataSource()
+    
+    var tags: [Tag]!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -19,23 +23,49 @@ class PhotosViewController: UIViewController, UICollectionViewDelegate {
         collectionView.delegate = self
         
         updateDataSource()
-        store.fetchInterestingPhotos { photosResult in
+        
+        store.fetchInterestingPhotos { _ in
             self.updateDataSource()
         }
+        
+        store.fetchAllTags { tagsResult in
+            switch tagsResult {
+            case let .success(tags):
+                self.tags = tags
+            case let .failure(error):
+                print("Error fetching tags: \(error).")
+            }
+        }
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        collectionView.reloadSections(IndexSet(integer: 0))
+        //collectionView.reloadData()
     }
     
     func collectionView(_ collectionView: UICollectionView,
                 willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        let photos: [Photo]
+        switch segmentedControl.selectedSegmentIndex {
+        case 0:
+            photos = photoDataSource.photos
+        case 1:
+            photos = photoDataSource.newPhotos
+        case 2:
+            photos = photoDataSource.favoritePhotos
+        default:
+            photos = photoDataSource.photos
+        }
         
-        let photo = photoDataSource.photos[indexPath.row]
+        let photo = photos[indexPath.row]
         
         store.fetchImage(for: photo) { (result) -> Void in
-            guard let photoIndex = self.photoDataSource.photos.firstIndex(of: photo),
+            guard let photoIndex = photos.firstIndex(of: photo),
                   case let .success(image) = result else {
                 return
             }
             let photoIndexPath = IndexPath(item: photoIndex, section: 0)
-            
             if let cell = self.collectionView.cellForItem(at: photoIndexPath)
                 as? PhotoCollectionViewCell {
                 cell.update(displaying: image)
@@ -68,6 +98,10 @@ class PhotosViewController: UIViewController, UICollectionViewDelegate {
             }
             self.collectionView.reloadSections(IndexSet(integer: 0))
         }
+    }
+    @IBAction func photosTypeChanged(_ sender: Any) {
+        photoDataSource.segmentedIndex = segmentedControl.selectedSegmentIndex
+        collectionView.reloadData()
     }
 }
 

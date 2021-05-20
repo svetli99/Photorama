@@ -5,6 +5,7 @@
 import UIKit
 
 class ImageStore {
+    static let shared = ImageStore()
     
     let cache = NSCache<NSString, UIImage>()
     
@@ -27,7 +28,6 @@ class ImageStore {
         guard let imageFromDisk = UIImage(contentsOfFile: url.path) else {
             return nil
         }
-
         cache.setObject(imageFromDisk, forKey: key as NSString)
         return imageFromDisk
     }
@@ -50,6 +50,4 @@ class ImageStore {
 
         return documentDirectory.appendingPathComponent(key)
     }
-    
-    
 }

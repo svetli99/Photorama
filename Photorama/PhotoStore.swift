@@ -14,7 +14,9 @@ enum PhotoError: Error {
 }
 
 class PhotoStore {
-    let imageStore = ImageStore()
+    static let shared = PhotoStore()
+    let imageStore = ImageStore.shared
+    
     let persistentContainer: NSPersistentContainer = {
         let container = NSPersistentContainer(name: "Photorama")
         container.loadPersistentStores { (description, error) in
@@ -36,16 +38,10 @@ class PhotoStore {
         let task = session.dataTask(with: request) {
             (data, response, error) in
 
-            var result = self.processPhotosRequest(data: data, error: error)
-            if case .success = result {
-                do {
-                    try self.persistentContainer.viewContext.save()
-                } catch {
-                    result = .failure(error)
+            self.processPhotosRequest(data: data, error: error) { result in
+                OperationQueue.main.addOperation {
+                    completion(result)
                 }
-            }
-            OperationQueue.main.addOperation {
-                completion(result)
             }
         }
         task.resume()
@@ -80,42 +76,43 @@ class PhotoStore {
         task.resume()
     }
     
-    private func processPhotosRequest(data: Data?, error: Error?) -> Result<[Photo], Error> {
+    private func processPhotosRequest(data: Data?, error: Error?, completion: @escaping (Result<[Photo], Error>) -> Void) {
         guard let jsonData = data else {
-            return .failure(error!)
+            completion(.failure(error!))
+            return
         }
         
-        let context = persistentContainer.viewContext
-        
-        switch FlickrAPI.photos(fromJSON: jsonData) {
-        case let .success(flickrPhotos):
-            let photos = flickrPhotos.map { flickrPhoto -> Photo in
-                let fetchRequest: NSFetchRequest<Photo> = Photo.fetchRequest()
-                let predicate = NSPredicate(
-                    format: "\(#keyPath(Photo.photoID)) == \(flickrPhoto.photoID)"
-                )
-                fetchRequest.predicate = predicate
-                var fetchedPhotos: [Photo]?
-                context.performAndWait {
-                    fetchedPhotos = try? fetchRequest.execute()
-                }
-                if let existingPhoto = fetchedPhotos?.first {
-                    return existingPhoto
+        persistentContainer.performBackgroundTask { context in
+            switch FlickrAPI.photos(fromJSON: jsonData) {
+            case let .success(flickrPhotos):
+                let setPhotos = Set(self.allPhotos)
+                
+                flickrPhotos.forEach { photo in
+                    if !setPhotos.contains(where: { $0.photoID == photo.photoID }) {
+                        var newPhoto: Photo!
+                        context.performAndWait {
+                            newPhoto = Photo(context: context)
+                            newPhoto.title = photo.title
+                            newPhoto.photoID = photo.photoID
+                            newPhoto.remoteURL = photo.remoteURL
+                            newPhoto.dateTaken = photo.dateTaken
+                        }
+                        self.allPhotos.append(newPhoto)
+                    }
                 }
                 
-                var photo: Photo!
-                context.performAndWait {
-                    photo = Photo(context: context)
-                    photo.title = flickrPhoto.title
-                    photo.photoID = flickrPhoto.photoID
-                    photo.remoteURL = flickrPhoto.remoteURL
-                    photo.dateTaken = flickrPhoto.dateTaken
+                do {
+                    try context.save()
+                } catch {
+                    print("Error saving to Core Data: \(error)")
                 }
-                return photo
+                
+                let viewContext = self.persistentContainer.viewContext
+                let viewContextPhotos = self.allPhotos.map { viewContext.object(with: $0.objectID) } as! [Photo]
+                completion(.success(viewContextPhotos))
+            case let .failure(error):
+                completion(.failure(error))
             }
-            return .success(photos)
-        case let .failure(error):
-            return .failure(error)
         }
     }
     
@@ -131,6 +128,8 @@ class PhotoStore {
         return .success(image)
     }
     
+    var allPhotos = [Photo]()
+    
     func fetchAllPhotos(completion: @escaping (Result<[Photo], Error>) -> Void) {
         let fetchRequest: NSFetchRequest<Photo> = Photo.fetchRequest()
         let sortByDateTaken = NSSortDescriptor(key: #keyPath(Photo.dateTaken),
@@ -140,8 +139,24 @@ class PhotoStore {
         let viewContext = persistentContainer.viewContext
         viewContext.perform {
             do {
-                let allPhotos = try viewContext.fetch(fetchRequest)
-                completion(.success(allPhotos))
+                self.allPhotos = try viewContext.fetch(fetchRequest)
+                completion(.success(self.allPhotos))
+            } catch {
+                completion(.failure(error))
+            }
+        }
+    }
+    
+    func fetchAllTags(completion: @escaping (Result<[Tag], Error>) -> Void) {
+        let fetchRequest: NSFetchRequest<Tag> = Tag.fetchRequest()
+        let sortByName = NSSortDescriptor(key: #keyPath(Tag.name), ascending: true)
+        fetchRequest.sortDescriptors = [sortByName]
+
+        let viewContext = persistentContainer.viewContext
+        viewContext.perform {
+            do {
+                let allTags = try fetchRequest.execute()
+                completion(.success(allTags))
             } catch {
                 completion(.failure(error))
             }
