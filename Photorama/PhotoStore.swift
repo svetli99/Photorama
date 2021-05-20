@@ -16,7 +16,6 @@ enum PhotoError: Error {
 class PhotoStore {
     static let shared = PhotoStore()
     let imageStore = ImageStore.shared
-    var tagDataSource: TagDataSource!
     
     let persistentContainer: NSPersistentContainer = {
         let container = NSPersistentContainer(name: "Photorama")
@@ -149,19 +148,20 @@ class PhotoStore {
         }
     }
     
-    func fetchAllTags(completion: @escaping (Result<[Tag], Error>) -> Void) {
+    //private var _tags: [Tag]!
+    
+    lazy var tags: [Tag]? = fetchAllTags()
+    
+    private func fetchAllTags() -> [Tag]? {
         let fetchRequest: NSFetchRequest<Tag> = Tag.fetchRequest()
         let sortByName = NSSortDescriptor(key: #keyPath(Tag.name), ascending: true)
         fetchRequest.sortDescriptors = [sortByName]
 
         let viewContext = persistentContainer.viewContext
-        viewContext.perform {
-            do {
-                let allTags = try fetchRequest.execute()
-                completion(.success(allTags))
-            } catch {
-                completion(.failure(error))
-            }
+        var tags: [Tag]?
+        viewContext.performAndWait {
+            tags = try? fetchRequest.execute()
         }
+        return tags
     }
 }

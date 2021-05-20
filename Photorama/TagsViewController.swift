@@ -14,30 +14,23 @@ class TagsViewController: UITableViewController {
         
         tableView.dataSource = tagDataSource
         tableView.delegate = self
-        store.tagDataSource = tagDataSource
         updateTags()
     }
     
     private func updateTags() {
-        store.fetchAllTags { tagsResult in
-            do {
-                let tags = try tagsResult.get()
-                self.tagDataSource.tags = tags
-                guard let photoTags = self.photo.tags as? Set<Tag> else {
-                    return
-                }
-                
-                for tag in photoTags {
-                    if let index = self.tagDataSource.tags.firstIndex(of: tag) {
-                        self.selectedIndexRows.insert(index)
-                    }
-                }
-            } catch {
-                print("Error fetching tags: \(error).")
-            }
-            
-            self.tableView.reloadSections(IndexSet(integer: 0), with: .automatic)
+        self.tagDataSource.tags = store.tags!
+        guard let photoTags = self.photo.tags as? Set<Tag> else {
+            return
         }
+        
+        for tag in photoTags {
+            if let index = self.tagDataSource.tags.firstIndex(of: tag) {
+                self.selectedIndexRows.insert(index)
+            }
+        }
+        
+        self.tableView.reloadSections(IndexSet(integer: 0), with: .automatic)
+        
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

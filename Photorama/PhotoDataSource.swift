@@ -11,7 +11,7 @@ class PhotoDataSource: NSObject, UICollectionViewDataSource {
         photos.filter { $0.isNew }
     }
     
-    var tagDataSource = PhotoStore.shared.tagDataSource
+    let store = PhotoStore.shared
     
     var tagPhotos: [Tag: [Photo]] {
         var dict = [Tag: [Photo]]()
@@ -20,18 +20,9 @@ class PhotoDataSource: NSObject, UICollectionViewDataSource {
                 return
             }
             photoTags.forEach { tag in
-                print(tag)
                 dict[tag, default: []].append(photo)
             }
         }
-//        tagDataSource?.tags.forEach { tag in
-//            dict[tag] = photos.filter { photo in
-//                guard let photoTags = photo.tags as? Set<Tag> else {
-//                    return false
-//                }
-//               return photoTags.contains(tag)
-//            }
-//        }
         return dict
     }
     
@@ -43,16 +34,17 @@ class PhotoDataSource: NSObject, UICollectionViewDataSource {
         case 0...2:
             return 1
         case 3:
-            print(tagPhotos,tagPhotos.count)
             return tagPhotos.count
         default:
             return 0
         }
     }
-    
-//    func indexTitles(for collectionView: UICollectionView) -> [String]? {
-//        <#code#>
-//    }
+
+    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+        let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "header", for: indexPath) as! PhotoSectionHeaderView
+        header.label.text = store.tags![indexPath.section].name
+        return header
+    }
     
     func collectionView(_ collectionView: UICollectionView,  numberOfItemsInSection section: Int) -> Int {
         switch segmentedIndex {
@@ -63,11 +55,8 @@ class PhotoDataSource: NSObject, UICollectionViewDataSource {
         case 2:
             return favoritePhotos.count
         case 3:
-            guard let tag = tagDataSource?.tags[section], let photos = tagPhotos[tag] else {
-                print(tagDataSource)
-                return 0
-            }
-            print("there")
+            let tag = store.tags![section]
+            let photos = tagPhotos[tag]!
             return photos.count
         default:
             return 0
@@ -81,4 +70,8 @@ class PhotoDataSource: NSObject, UICollectionViewDataSource {
         cell.update(displaying: nil)
         return cell
     }
+}
+
+class PhotoSectionHeaderView: UICollectionReusableView {
+    @IBOutlet weak var label: UILabel!
 }

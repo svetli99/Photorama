@@ -28,14 +28,8 @@ class PhotosViewController: UIViewController, UICollectionViewDelegate {
             self.updateDataSource()
         }
         
-        store.fetchAllTags { tagsResult in
-            switch tagsResult {
-            case let .success(tags):
-                self.tags = tags
-            case let .failure(error):
-                print("Error fetching tags: \(error).")
-            }
-        }
+        self.tags = store.tags
+        
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -54,7 +48,8 @@ class PhotosViewController: UIViewController, UICollectionViewDelegate {
         case 2:
             photos = photoDataSource.favoritePhotos
         default:
-            photos = photoDataSource.photos
+            let tag = store.tags![indexPath.section]
+            photos = photoDataSource.tagPhotos[tag]!
         }
         
         let photo = photos[indexPath.row]
@@ -84,8 +79,11 @@ class PhotosViewController: UIViewController, UICollectionViewDelegate {
                     photos = photoDataSource.newPhotos
                 case 2:
                     photos = photoDataSource.favoritePhotos
+                case 3:
+                    let tag = store.tags![selectedIndexPath.section]
+                    photos = photoDataSource.tagPhotos[tag]!
                 default:
-                    photos = photoDataSource.photos
+                    photos = []
                 }
                 let photo = photos[selectedIndexPath.row]
                 
