@@ -41,9 +41,11 @@ class PhotoDataSource: NSObject, UICollectionViewDataSource {
     }
 
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+        
         let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "header", for: indexPath) as! PhotoSectionHeaderView
-        header.label.text = store.tags![indexPath.section].name
+        header.label.text = store.tags[indexPath.section].name 
         return header
+        
     }
     
     func collectionView(_ collectionView: UICollectionView,  numberOfItemsInSection section: Int) -> Int {
@@ -55,7 +57,7 @@ class PhotoDataSource: NSObject, UICollectionViewDataSource {
         case 2:
             return favoritePhotos.count
         case 3:
-            let tag = store.tags![section]
+            let tag = store.tags[section]
             let photos = tagPhotos[tag]!
             return photos.count
         default:

@@ -34,6 +34,7 @@ class PhotoStore {
     
     func fetchInterestingPhotos(completion: @escaping (Result<[Photo], Error>) -> Void ) {
         let url = FlickrAPI.interestingPhotosURL
+        print(url)
         let request = URLRequest(url: url)
         let task = session.dataTask(with: request) {
             (data, response, error) in
@@ -148,19 +149,17 @@ class PhotoStore {
         }
     }
     
-    //private var _tags: [Tag]!
+    lazy var tags: [Tag] = fetchAllTags()
     
-    lazy var tags: [Tag]? = fetchAllTags()
-    
-    private func fetchAllTags() -> [Tag]? {
+    private func fetchAllTags() -> [Tag] {
         let fetchRequest: NSFetchRequest<Tag> = Tag.fetchRequest()
         let sortByName = NSSortDescriptor(key: #keyPath(Tag.name), ascending: true)
         fetchRequest.sortDescriptors = [sortByName]
 
         let viewContext = persistentContainer.viewContext
-        var tags: [Tag]?
+        var tags: [Tag] = []
         viewContext.performAndWait {
-            tags = try? fetchRequest.execute()
+            tags = (try? fetchRequest.execute()) ?? []
         }
         return tags
     }

@@ -18,7 +18,7 @@ class TagsViewController: UITableViewController {
     }
     
     private func updateTags() {
-        self.tagDataSource.tags = store.tags!
+        self.tagDataSource.tags = store.tags
         guard let photoTags = self.photo.tags as? Set<Tag> else {
             return
         }

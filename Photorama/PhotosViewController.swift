@@ -48,22 +48,29 @@ class PhotosViewController: UIViewController, UICollectionViewDelegate {
         case 2:
             photos = photoDataSource.favoritePhotos
         default:
-            let tag = store.tags![indexPath.section]
+            let tag = store.tags[indexPath.section]
             photos = photoDataSource.tagPhotos[tag]!
         }
         
         let photo = photos[indexPath.row]
         
         store.fetchImage(for: photo) { (result) -> Void in
-            guard let photoIndex = photos.firstIndex(of: photo),
-                  case let .success(image) = result else {
+            guard let photoIndex = photos.firstIndex(of: photo), case let .success(image) = result else {
                 return
             }
-            let photoIndexPath = IndexPath(item: photoIndex, section: 0)
+            let photoIndexPath = IndexPath(item: photoIndex, section: indexPath.section)
             if let cell = self.collectionView.cellForItem(at: photoIndexPath)
                 as? PhotoCollectionViewCell {
                 cell.update(displaying: image)
             }
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
+        if segmentedControl.selectedSegmentIndex == 3 {
+            return CGSize(width: collectionView.frame.width, height: 30)
+        } else {
+            return CGSize.zero
         }
     }
     
@@ -80,7 +87,7 @@ class PhotosViewController: UIViewController, UICollectionViewDelegate {
                 case 2:
                     photos = photoDataSource.favoritePhotos
                 case 3:
-                    let tag = store.tags![selectedIndexPath.section]
+                    let tag = store.tags[selectedIndexPath.section]
                     photos = photoDataSource.tagPhotos[tag]!
                 default:
                     photos = []

@@ -19,13 +19,13 @@
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="2" minimumInteritemSpacing="2" id="5Sq-r9-mxa">
                             <size key="itemSize" width="90" height="90"/>
-                            <size key="headerReferenceSize" width="50" height="50"/>
+                            <size key="headerReferenceSize" width="50" height="30"/>
                             <size key="footerReferenceSize" width="0.0" height="0.0"/>
                             <inset key="sectionInset" minX="2" minY="2" maxX="2" maxY="2"/>
                         </collectionViewFlowLayout>
                         <cells>
                             <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="PhotoCollectionViewCell" id="iMF-lj-vie" customClass="PhotoCollectionViewCell" customModule="Photorama" customModuleProvider="target">
-                                <rect key="frame" x="2" y="52" width="90" height="90"/>
+                                <rect key="frame" x="2" y="32" width="90" height="90"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="7mD-sv-JRb">
                                     <rect key="frame" x="0.0" y="0.0" width="90" height="90"/>
@@ -57,17 +57,20 @@
                             </collectionViewCell>
                         </cells>
                         <collectionReusableView key="sectionHeaderView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" reuseIdentifier="header" id="VlU-qw-LAJ" customClass="PhotoSectionHeaderView" customModule="Photorama" customModuleProvider="target">
-                            <rect key="frame" x="0.0" y="0.0" width="414" height="50"/>
+                            <rect key="frame" x="0.0" y="0.0" width="414" height="30"/>
                             <autoresizingMask key="autoresizingMask"/>
                             <subviews>
-                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Header" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="MQR-vd-89I">
-                                    <rect key="frame" x="174" y="8" width="111" height="34"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="MQR-vd-89I">
+                                    <rect key="frame" x="207" y="15" width="0.0" height="0.0"/>
                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                     <nil key="textColor"/>
                                     <nil key="highlightedColor"/>
                                 </label>
                             </subviews>
+                            <constraints>
+                                <constraint firstItem="MQR-vd-89I" firstAttribute="centerX" secondItem="VlU-qw-LAJ" secondAttribute="centerX" id="MFR-7X-nqV"/>
+                                <constraint firstItem="MQR-vd-89I" firstAttribute="centerY" secondItem="VlU-qw-LAJ" secondAttribute="centerY" id="kZL-Q9-fng"/>
+                            </constraints>
                             <connections>
                                 <outlet property="label" destination="MQR-vd-89I" id="gKQ-JG-v0B"/>
                             </connections>
